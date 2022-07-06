@@ -194,12 +194,6 @@ class MainWindow(QMainWindow):
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
         
-# * -----------------------------    
-    def updateData(self):
-        # print("dumb")
-        file = self.image_files[self.progress]
-        # Increments progress bar
-        
 # ? =============================
 # ! She/Her             
     def she(self, s):
@@ -239,7 +233,12 @@ class MainWindow(QMainWindow):
             print("dumbass") #prints if true
         else:
             print("idot") #prints if false    
-# ? =============================            
+# ? =============================           
+# * -----------------------------    
+    def updateData(self):
+        # print("dumb")
+        file = self.image_files[self.progress]
+        # Increments progress bar         
 
 # * -----------------------------        
     def ontoNext(self):
@@ -326,10 +325,9 @@ def main():
 
 if __name__ == '__main__':
     main()
-
+    
+# ! ~ Original starter code for the GUI ~
 # ! app = QApplication(sys.argv)
-
 # ! window = MainWindow()
 # ! window.show()
-
 # ! app.exec_()
