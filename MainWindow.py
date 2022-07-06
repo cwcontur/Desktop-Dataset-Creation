@@ -39,14 +39,16 @@ import sys
 # global variables for the current image number [progress], and the number of images [images]
 
 class MainWindow(QMainWindow):
-    root_directory = os.path.dirname(os.path.abspath("__file__"))
-    image_directory = os.path.join(root_directory, "images/")
-    mylist = os.listdir(image_directory)
-    
+    # root_directory = os.path.dirname(os.path.abspath("__file__"))
+    # image_directory = os.path.join(root_directory, "images/")
+    # mylist = os.listdir(image_directory)
+    global images, progression, W, H, inputResults
     images = 1000
-    progress = 0
-    
-    inputs = [6, images]
+    progression = 0
+    W = 6
+    H = images - 1
+    # ! 1 is toggled, 0 is not toggled
+    inputResults = [[0 for x in range(W)] for y in range(H)]
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -75,8 +77,9 @@ class MainWindow(QMainWindow):
         
         # * ----------------
         # * collects inputs for each image [globally] and stores them in a 2D array
-        global inputs
-        inputs = [6, images]
+        # ! 1 is toggled, 0 is not toggled
+        global inputResults
+        inputResults = [[0 for x in range(W)] for y in range(H)]
         # * ----------------
         
         # Array of zeroes with a place for each image
@@ -121,42 +124,43 @@ class MainWindow(QMainWindow):
         self.she.setChecked(False)
         self.she.setShortcut(QKeySequence("Left"))
         self.she.setStatusTip("Use 'Left Arrow' to toggle")
-        self.she.toggled.connect(self.she)
+        self.she.toggled.connect(self.sheData)
         #   --------------------------------------
         self.her = AnimatedToggle(checked_color="#e6732c", pulse_checked_color="#bfbfbf") # Orange, Grey
         self.her.setChecked(False)
         self.her.setShortcut(QKeySequence("Shift+Left"))
         self.her.setStatusTip("Use 'Shift+Left Arrow' to toggle")
-        self.her.toggled.connect(self.her)
+        self.her.toggled.connect(self.herData)
         # ? =============================================================================
         self.he = AnimatedToggle(checked_color="#ebd82f", pulse_checked_color="#bfbfbf") # Yellow, Grey
         self.he.setChecked(False)
         self.he.setShortcut(QKeySequence("Down"))
         self.he.setStatusTip("Use 'Down Arrow' to toggle")
-        self.he.toggled.connect(self.he)
+        self.he.toggled.connect(self.heData)
         #   --------------------------------------       
         self.him = AnimatedToggle(checked_color="#3ac25f", pulse_checked_color="#bfbfbf") # Green, Grey
         self.him.setChecked(False)
         self.him.setShortcut(QKeySequence("Shift+Down"))
         self.him.setStatusTip("Use 'Sift+Down Arrow' to toggle")
-        self.him.toggled.connect(self.him)
+        self.him.toggled.connect(self.himData)
         # ? =============================================================================
         self.they = AnimatedToggle(checked_color="#2f5eeb", pulse_checked_color="#bfbfbf") # Blue, Grey
         self.they.setChecked(False) 
         self.they.setShortcut(QKeySequence("Right"))
         self.they.setStatusTip("Use 'Right Arrow' to toggle")
-        self.they.toggled.connect(self.they)
+        self.they.toggled.connect(self.theyData)
         #   --------------------------------------        
         self.them = AnimatedToggle(checked_color="#612feb", pulse_checked_color="#bfbfbf") # Purple, Grey
         self.them.setChecked(False) 
         self.them.setShortcut(QKeySequence("Shift+Right"))
         self.them.setStatusTip("Use 'Shift+Down Arrow' to toggle")
-        self.them.toggled.connect(self.them)
+        self.them.toggled.connect(self.themData)
         # ? =============================================================================       
         # ! -----------------------------------------------------------------------------
         
         # ? Submits button states and moves onto the next image for labeling 
         self.next = QPushButton('Submit', self)
+        self.next.setStatusTip("Use 'Enter' to submit label and go to next image")
         self.next.clicked.connect(self.ontoNext)
         
         # * Creates the progress bar and limits it for the number of images that will be processed;
@@ -194,46 +198,42 @@ class MainWindow(QMainWindow):
         
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
-        
+
+# ! 1 is toggled, 0 is not toggled 
 # ? =============================
 # ! She/Her             
-    def she(self, s):
+    def sheData(self, s):
+        global inputResults
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false
+            inputResults[0][progression] = 1
+            # print("True")
 #   -----------------------------            
-    def her(self, s):
+    def herData(self, s):
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false
+            inputResults[1][progression] = 1
+            # print("True")
 # ? =============================     
 # ! He/Him            
-    def he(self, s):
+    def heData(self, s):
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false
+            inputResults[2][progression] = 1
+            # print("True")
 #   -----------------------------            
-    def him(self, s):
+    def himData(self, s):
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false
+            inputResults[3][progression] = 1
+            # print("True")
 # ? =============================      
 # ! They/Them            
-    def they(self, s):
+    def theyData(self, s):
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false
+            inputResults[4][progression] = 1
+            # print("True")
 #   -----------------------------            
-    def them(self, s):
+    def themData(self, s):
         if(s):
-            print("dumbass") #prints if true
-        else:
-            print("idot") #prints if false    
+            inputResults[5][progression] = 1
+            # print("True")
 # ? =============================           
 # * -----------------------------    
     def updateData(self):
