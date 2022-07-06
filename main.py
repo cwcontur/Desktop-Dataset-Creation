@@ -160,6 +160,8 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
         
         self.center()
         self.setWindowTitle("Dataset Label Creator")
+        self.setMinimumSize(QSize(800, 500))
+        self.setMaximumSize(QSize(1920, 1080))
         
         self.show()
     
@@ -173,7 +175,7 @@ class Ui_MainWindow(QtWidgets.QMainWindow):
     
     def tabs(self):
         tabs = QTabWidget()
-        tabs.setTabPosition(self, North)
+        tabs.setTabPosition(self, topLeft)
         tabs.setMovable(True)
         
         tabs.addTab(Folder("Folder"), "Folder")
