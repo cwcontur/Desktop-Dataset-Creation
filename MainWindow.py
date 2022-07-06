@@ -38,6 +38,15 @@ from PyQt5.QtCore import *
 import sys
 # global variables for the current image number [progress], and the number of images [images]
 
+class ButtonGroup(QtCore.QObject):
+    trigger = QtCore.pyqtSignal((),(bool,))
+    
+    def addButton(self, button):
+        button.clicked.connect(self.trigger.emit)
+        
+    def removeButton(self, button):
+        button.clicked.disconnect(self.trigger.emit)
+
 class MainWindow(QMainWindow):
     # root_directory = os.path.dirname(os.path.abspath("__file__"))
     # image_directory = os.path.join(root_directory, "images/")
@@ -196,6 +205,9 @@ class MainWindow(QMainWindow):
         widget.setLayout(base_layout)
         self.setCentralWidget(widget)
         
+        toolbar = QToolBar("Cookie Bakery")
+        self.addToolBar(toolbar)
+        
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
 
@@ -246,6 +258,13 @@ class MainWindow(QMainWindow):
         global progression
         progression += 1
         global images
+        
+        she.setChecked(False)
+        her.setChecked(False)
+        he.setChecked(False)
+        him.setChecked(False)
+        they.setChecked(False)
+        them.setChecked(False)
         # print(self.she.isEnabled())            
         # if progression <= images:
         #     self.progressBar.setValue(progression)
