@@ -36,6 +36,8 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 import sys
+
+from PIL import Image
 # global variables for the current image number [progress], and the number of images [images]
 # * ================================================
 class ButtonGroup(QtCore.QObject):
@@ -270,9 +272,11 @@ class MainWindow(QMainWindow):
     def updateData(self):
         # print("dumb")
         global progression
-        file = self.image_files[progression]
-        print(file)
-        image.setPixmap(QPixmap(file))
+        # file = self.image_files[progression]
+        da = os.path.join(image_directory, self.image_files[progression])
+        tab = Image.open(str(da))
+        image.setPixmap(QPixmap("C:\\Users\\indie\\Desktop-Dataset-Creation\\image_data\\00000001.jpg"
+))
         image.setScaledContents(True)
         # Increments progress bar         
 
