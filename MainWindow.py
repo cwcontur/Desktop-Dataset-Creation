@@ -37,7 +37,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtCore import * 
 import sys
 # global variables for the current image number [progress], and the number of images [images]
-
+# * ================================================
 class ButtonGroup(QtCore.QObject):
     trigger = QtCore.pyqtSignal((),(bool,))
     
@@ -46,6 +46,7 @@ class ButtonGroup(QtCore.QObject):
         
     def removeButton(self, button):
         button.clicked.disconnect(self.trigger.emit)
+# * ================================================
 
 class MainWindow(QMainWindow):
     # root_directory = os.path.dirname(os.path.abspath("__file__"))
@@ -126,6 +127,8 @@ class MainWindow(QMainWindow):
         self.image = QLabel("Data")
         self.ontoNext()
         
+        self.group = ButtonGroup()
+        self.group.
         # ! -----------------------------------------------------------------------------
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
         # ? =============================================================================
@@ -133,36 +136,42 @@ class MainWindow(QMainWindow):
         self.she.setChecked(False)
         self.she.setShortcut(QKeySequence("Left"))
         self.she.setStatusTip("Use 'Left Arrow' to toggle")
+        self.group.addButton(self.she)
         self.she.toggled.connect(self.sheData)
         #   --------------------------------------
         self.her = AnimatedToggle(checked_color="#e6732c", pulse_checked_color="#bfbfbf") # Orange, Grey
         self.her.setChecked(False)
         self.her.setShortcut(QKeySequence("Shift+Left"))
         self.her.setStatusTip("Use 'Shift+Left Arrow' to toggle")
+        self.group.addButton(self.her)
         self.her.toggled.connect(self.herData)
         # ? =============================================================================
         self.he = AnimatedToggle(checked_color="#ebd82f", pulse_checked_color="#bfbfbf") # Yellow, Grey
         self.he.setChecked(False)
         self.he.setShortcut(QKeySequence("Down"))
         self.he.setStatusTip("Use 'Down Arrow' to toggle")
+        self.group.addButton(self.he)
         self.he.toggled.connect(self.heData)
         #   --------------------------------------       
         self.him = AnimatedToggle(checked_color="#3ac25f", pulse_checked_color="#bfbfbf") # Green, Grey
         self.him.setChecked(False)
         self.him.setShortcut(QKeySequence("Shift+Down"))
-        self.him.setStatusTip("Use 'Sift+Down Arrow' to toggle")
+        self.him.setStatusTip("Use 'Shift+Down Arrow' to toggle")
+        self.group.addButton(self.him)
         self.him.toggled.connect(self.himData)
         # ? =============================================================================
         self.they = AnimatedToggle(checked_color="#2f5eeb", pulse_checked_color="#bfbfbf") # Blue, Grey
         self.they.setChecked(False) 
         self.they.setShortcut(QKeySequence("Right"))
         self.they.setStatusTip("Use 'Right Arrow' to toggle")
+        self.group.addButton(self.they)
         self.they.toggled.connect(self.theyData)
         #   --------------------------------------        
         self.them = AnimatedToggle(checked_color="#612feb", pulse_checked_color="#bfbfbf") # Purple, Grey
         self.them.setChecked(False) 
         self.them.setShortcut(QKeySequence("Shift+Right"))
         self.them.setStatusTip("Use 'Shift+Down Arrow' to toggle")
+        self.group.addButton(self.them)
         self.them.toggled.connect(self.themData)
         # ? =============================================================================       
         # ! -----------------------------------------------------------------------------
@@ -259,12 +268,12 @@ class MainWindow(QMainWindow):
         progression += 1
         global images
         
-        she.setChecked(False)
-        her.setChecked(False)
-        he.setChecked(False)
-        him.setChecked(False)
-        they.setChecked(False)
-        them.setChecked(False)
+        # she.setChecked(False)
+        # her.setChecked(False)
+        # he.setChecked(False)
+        # him.setChecked(False)
+        # they.setChecked(False)
+        # them.setChecked(False)
         # print(self.she.isEnabled())            
         # if progression <= images:
         #     self.progressBar.setValue(progression)
