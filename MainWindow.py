@@ -73,9 +73,9 @@ class MainWindow(QMainWindow):
         # Source path for GUI icons
         iconPath = os.path.join(root_directory, "icons\\")
         
-        # Loads splash screen that stays persistent till the program is finished starting up
+        # ? Loads splash screen that stays persistent till the program is finished starting up
         pic = QPixmap(os.path.join(iconPath, "cookies_jar.png"))
-        pix = pic.scaled(300, 300, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
+        pix = pic.scaled(400, 400, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
         splash = QSplashScreen(pix)
         splash.show()                
         
@@ -114,8 +114,8 @@ class MainWindow(QMainWindow):
                 images += 1  # ! Count of the pictures found
 
         mylist = os.listdir(image_directory)
-        self.image_files = mylist
-        
+        self.image_files = os.listdir(image_directory)
+        print(self.image_files)
         windowIcon = os.path.join(iconPath, 'cookie.png')
         iconWin = QtGui.QIcon(windowIcon)
         self.setWindowIcon(iconWin)
@@ -124,10 +124,16 @@ class MainWindow(QMainWindow):
         self.setMaximumSize(QSize(1500, 1000))
         
         # ? Creates QLabel for the images from the dataset which will be displayed
-        self.image = QLabel("Data")
-        self.ontoNext()
         
-        self.group = ButtonGroup()
+        self.image = QLabel("Data")
+        # self.updateData()
+        # self.ontoNext()
+        
+        # ! Creates button group to control the buttons!
+        # ! ==========================
+        self.group = QButtonGroup()
+        self.group.setExclusive(False)
+        # ! ==========================
         
         # ! -----------------------------------------------------------------------------
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
@@ -178,6 +184,7 @@ class MainWindow(QMainWindow):
         
         # ? Submits button states and moves onto the next image for labeling 
         self.next = QPushButton('Submit', self)
+        self.next.setShortcut(QKeySequence("Space"))
         self.next.setStatusTip("Use 'Enter' to submit label and go to next image")
         self.group.addButton(self.next)
         self.next.clicked.connect(self.ontoNext)
@@ -198,7 +205,7 @@ class MainWindow(QMainWindow):
         submit_layout = QVBoxLayout()
         
         # ? Buttons added to the GUI layout to be displayed
-        buttons_layout.addWidget(self.progressBar)
+        buttons_layout.addWidget(self.image)
         buttons_layout.addWidget(self.she)
         buttons_layout.addWidget(self.her)
         buttons_layout.addWidget(self.he)
@@ -215,6 +222,7 @@ class MainWindow(QMainWindow):
         widget.setLayout(base_layout)
         self.setCentralWidget(widget)
         
+        # * Adds tool bar at top
         toolbar = QToolBar("Cookie Bakery")
         self.addToolBar(toolbar)
         
@@ -256,30 +264,33 @@ class MainWindow(QMainWindow):
         if(s):
             inputResults[5][progression] = 1
             # print("True")
-# ? =============================           
+# ? =============================   
+        
 # * -----------------------------    
     def updateData(self):
         # print("dumb")
-        file = self.image_files[self.progress]
+        global progression
+        file = self.image_files[progression]
+        print(file)
+        image.setPixmap(QPixmap(file))
+        image.setScaledContents(True)
         # Increments progress bar         
 
 # * -----------------------------        
-    def ontoNext(self):
+    def ontoNext(self, s):
         global progression
-        progression += 1
         global images
         
-        # she.setChecked(False)
-        # her.setChecked(False)
-        # he.setChecked(False)
-        # him.setChecked(False)
-        # they.setChecked(False)
-        # them.setChecked(False)
-        # print(self.she.isEnabled())            
+        for button in self.group.buttons():
+            if button is not s:
+                button.setChecked(False)
+        
         # if progression <= images:
         #     self.progressBar.setValue(progression)
-        # self.updateData()
         
+        self.updateData()
+        progression += 1
+
 # * ----------------------------- 
 # * Opens dialogue box when no options have been selected, but the 'submit' button was used
     def userError(self):
