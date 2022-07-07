@@ -21,13 +21,13 @@ import os
 import pandas as pd
 import numpy as np
 # import PyQt5
-from PyQt5 import QtCore
+from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import *
 from PyQt5 import QtGui
-from matplotlib import image
+# from matplotlib import image
 from pydantic import root_validator
 from qtwidgets import Toggle, AnimatedToggle
 
@@ -54,13 +54,13 @@ class MainWindow(QMainWindow):
     # root_directory = os.path.dirname(os.path.abspath("__file__"))
     # image_directory = os.path.join(root_directory, "images/")
     # mylist = os.listdir(image_directory)
-    global images, progression, W, H, inputResults
-    images = 1000
+    global images, progression#, W, H, inputResults
+    images = 0
     progression = 0
-    W = 6
-    H = images - 1
-    # ! 1 is toggled, 0 is not toggled
-    inputResults = [[0 for x in range(W)] for y in range(H)]
+    # W = 6
+    # H = images - 1
+    # # ! 1 is toggled, 0 is not toggled
+    # inputResults = [[0 for x in range(W)] for y in range(H)]
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -76,8 +76,8 @@ class MainWindow(QMainWindow):
         iconPath = os.path.join(root_directory, "icons\\")
         
         # ? Loads splash screen that stays persistent till the program is finished starting up
-        pic = QPixmap(os.path.join(iconPath, "cookies_jar.png"))
-        pix = pic.scaled(400, 400, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
+        pic = QPixmap(os.path.join(iconPath, "cookie_splash.png"))
+        pix = pic.scaled(300, 300, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
         splash = QSplashScreen(pix)
         splash.show()                
         
@@ -91,7 +91,9 @@ class MainWindow(QMainWindow):
         # * collects inputs for each image [globally] and stores them in a 2D array
         # ! 1 is toggled, 0 is not toggled
         global inputResults
-        inputResults = [[0 for x in range(W)] for y in range(H)]
+        W = 6
+        H = images
+        inputResults = [[None for x in range(W)] for y in range(H)]
         # * ----------------
         
         # Array of zeroes with a place for each image
@@ -117,20 +119,26 @@ class MainWindow(QMainWindow):
 
         mylist = os.listdir(image_directory)
         self.image_files = os.listdir(image_directory)
-        print(self.image_files)
+
         windowIcon = os.path.join(iconPath, 'cookie.png')
         iconWin = QtGui.QIcon(windowIcon)
         self.setWindowIcon(iconWin)
         self.setWindowTitle("Dataset Label Creator")
-        self.setMinimumSize(QSize(800, 535))
-        self.setMaximumSize(QSize(1500, 1000))
+        self.setFixedHeight(650)
+        self.setFixedWidth(650)        
         
         # ? Creates QLabel for the images from the dataset which will be displayed
-        
-        self.image = QLabel("Data")
-        # self.updateData()
-        # self.ontoNext()
-        
+        self.imageDisp = QLabel(self)
+        self.imageDisp.setFixedWidth(400)
+        self.imageDisp.setFixedHeight(533)
+
+        # ! Displays the first image when program is loaded
+        # currentImage = os.path.join(image_directory, self.image_files[progression])
+        # pixmap = QPixmap(currentImage)
+        # self.imageDisp.setPixmap(pixmap)
+        # self.imageDisp.setScaledContents(True)
+        # self.imageDisp.setMinimumSize(QSize(100, 300))
+        # self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         # ! Creates button group to control the buttons!
         # ! ==========================
         self.group = QButtonGroup()
@@ -201,13 +209,15 @@ class MainWindow(QMainWindow):
         self.progressBar.setMaximum(images) 
         
         # ! All layouts needed to be arranged for the GUI
+        basement_layout = QVBoxLayout()
         base_layout = QHBoxLayout()
         image_layout = QVBoxLayout()
         buttons_layout = QVBoxLayout()
-        submit_layout = QVBoxLayout()
+        # submit_layout = QVBoxLayout()
         
         # ? Buttons added to the GUI layout to be displayed
-        buttons_layout.addWidget(self.image)
+        image_layout.addWidget(self.imageDisp)
+        # buttons_layout.addWidget(self.progressBar)
         buttons_layout.addWidget(self.she)
         buttons_layout.addWidget(self.her)
         buttons_layout.addWidget(self.he)
@@ -217,9 +227,16 @@ class MainWindow(QMainWindow):
         buttons_layout.addWidget(self.next)
               
         # * Adds status bar at bottom for tips
-        self.setStatusBar(QStatusBar(self))
+        # self.setStatusBar(QStatusBar(self))
+        self.statusbar = self.statusBar()
+        self.statusbar.addPermanentWidget(self.progressBar)
+        # basement_layout.addWidget()
         
+        base_layout.addLayout(image_layout)
         base_layout.addLayout(buttons_layout)
+        
+        # basement_layout.addWidget(self.progressBar)
+        # basement_layout.addLayout(base_layout)
         widget = QWidget()
         widget.setLayout(base_layout)
         self.setCentralWidget(widget)
@@ -235,65 +252,61 @@ class MainWindow(QMainWindow):
 # ? =============================
 # ! She/Her             
     def sheData(self, s):
-        global inputResults
         if(s):
-            inputResults[0][progression] = 1
-            # print("True")
+            inputResults[progression][0] = 1
 #   -----------------------------            
     def herData(self, s):
         if(s):
-            inputResults[1][progression] = 1
-            # print("True")
+            inputResults[progression][1] = 1
 # ? =============================     
 # ! He/Him            
     def heData(self, s):
         if(s):
-            inputResults[2][progression] = 1
-            # print("True")
+            print(progression) 
+            inputResults[progression][2] = 1
 #   -----------------------------            
     def himData(self, s):
         if(s):
-            inputResults[3][progression] = 1
-            # print("True")
+            inputResults[progression][3] = 1
 # ? =============================      
 # ! They/Them            
     def theyData(self, s):
         if(s):
-            inputResults[4][progression] = 1
-            # print("True")
+            inputResults[progression][4] = 1
 #   -----------------------------            
     def themData(self, s):
         if(s):
-            inputResults[5][progression] = 1
-            # print("True")
+            inputResults[progression][5] = 1
 # ? =============================   
         
+# * -----------------------------
+# * Updates the image displayed + increments the progress bar
 # * -----------------------------    
     def updateData(self):
-        # print("dumb")
         global progression
-        # file = self.image_files[progression]
-        da = os.path.join(image_directory, self.image_files[progression])
-        tab = Image.open(str(da))
-        image.setPixmap(QPixmap("C:\\Users\\indie\\Desktop-Dataset-Creation\\image_data\\00000001.jpg"
-))
-        image.setScaledContents(True)
+        # Displays + updates image to be labeled
+        currentImage = os.path.join(image_directory, self.image_files[progression])
+        pixmap = QPixmap(currentImage)
+        self.imageDisp.setPixmap(pixmap)
+        self.imageDisp.setScaledContents(True)
+        self.imageDisp.setMinimumSize(QSize(100, 300))
+        self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        
         # Increments progress bar         
-
+        progression += 1
+        if progression <= images:
+            self.progressBar.setValue(progression)
 # * -----------------------------        
     def ontoNext(self, s):
         global progression
         global images
         
+        # Unchecks all radio buttons for fresh state when next image is shown
         for button in self.group.buttons():
             if button is not s:
                 button.setChecked(False)
-        
-        # if progression <= images:
-        #     self.progressBar.setValue(progression)
-        
+    
         self.updateData()
-        progression += 1
 
 # * ----------------------------- 
 # * Opens dialogue box when no options have been selected, but the 'submit' button was used
