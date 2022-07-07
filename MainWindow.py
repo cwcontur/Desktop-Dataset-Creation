@@ -128,7 +128,7 @@ class MainWindow(QMainWindow):
         self.ontoNext()
         
         self.group = ButtonGroup()
-        self.group.
+        
         # ! -----------------------------------------------------------------------------
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
         # ? =============================================================================
@@ -179,6 +179,7 @@ class MainWindow(QMainWindow):
         # ? Submits button states and moves onto the next image for labeling 
         self.next = QPushButton('Submit', self)
         self.next.setStatusTip("Use 'Enter' to submit label and go to next image")
+        self.group.addButton(self.next)
         self.next.clicked.connect(self.ontoNext)
         
         # * Creates the progress bar and limits it for the number of images that will be processed;
