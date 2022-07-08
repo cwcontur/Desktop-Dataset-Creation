@@ -53,10 +53,11 @@ class MainWindow(QMainWindow):
     # ? Default path
     root_directory = os.path.dirname(os.path.abspath("__file__"))
     
-    global images, progression, clickCounter
+    global images, progression, clickCounter, tracker
     images = 0
     progression = 0
     clickCounter = 0
+    tracker = 0
     
     global iconPath
     iconPath = os.path.join(root_directory, "icons\\")
@@ -136,7 +137,7 @@ class MainWindow(QMainWindow):
         self.imageDisp.setFixedHeight(533)
         
         # ! Displays the first image when program is loaded
-        currentImage = os.path.join(image_directory, self.image_files[progression])
+        currentImage = os.path.join(image_directory, self.image_files[progression - 1])
         pixmap = QPixmap(currentImage)
         self.imageDisp.setPixmap(pixmap)
         self.imageDisp.setScaledContents(True)
@@ -228,7 +229,7 @@ class MainWindow(QMainWindow):
         self.progressBar.setAlignment(Qt.AlignCenter)
         self.progressBar.setFormat("%v/%m")
         self.progressBar.setMaximum(images) 
-        self.progressBar.setValue(progression)
+        self.progressBar.setValue(progression - 1)
         
         # ! All layouts needed to be arranged for the GUI
         base_layout = QHBoxLayout()
@@ -320,41 +321,47 @@ class MainWindow(QMainWindow):
     # ? =============================
     # ! She/Her             
     def sheData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             inputResults[progression][0] = 1
             clickCounter += 1
+            tracker += 1
     #   -----------------------------            
     def herData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             clickCounter += 1
+            tracker += 1
             inputResults[progression][1] = 1
     # ? =============================     
     # ! He/Him            
     def heData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             clickCounter += 1
+            tracker += 1
             inputResults[progression][2] = 1
     #   -----------------------------            
     def himData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             clickCounter += 1
+            tracker += 1
             inputResults[progression][3] = 1
     # ? =============================      
     # ! They/Them            
     def theyData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             clickCounter += 1
+            tracker += 1
             inputResults[progression][4] = 1
     #   -----------------------------            
     def themData(self, s):
-        global clickCounter
+        global clickCounter, tracker
         if(s):
             clickCounter += 1
+            tracker += 1
             inputResults[progression][5] = 1
     # ? =============================   
         
@@ -368,7 +375,7 @@ class MainWindow(QMainWindow):
         
         global progression
         # Displays + updates image to be labeled
-        currentImage = os.path.join(image_directory, self.image_files[progression + 1])
+        currentImage = os.path.join(image_directory, self.image_files[progression])
         pixmap = QPixmap(currentImage)
         self.imageDisp.setPixmap(pixmap)
         self.imageDisp.setScaledContents(True)
@@ -376,9 +383,9 @@ class MainWindow(QMainWindow):
         self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         
         # Increments progress bar         
-        progression += 1
         if progression <= images:
             self.progressBar.setValue(progression)
+            progression += 1
     # * -----------------------------
     # * Goes onto the next image for labeling 
     # * -----------------------------         
@@ -399,19 +406,22 @@ class MainWindow(QMainWindow):
     # * Lets the user go back and redo the label for the last image
     # * -----------------------------           
     def goBackNow(self):
-        global progression
         # Displays and undoes label for last image to be labeled
-        if progression > 0:
-            currentImage = os.path.join(image_directory, self.image_files[progression-1])
+        global progression, tracker
+        
+        if progression != tracker:
+            progression -= 1
+        
+        if progression >= 1:
+            progression -= 1
+            self.progressBar.setValue(progression)
+            currentImage = os.path.join(image_directory, self.image_files[progression])
             pixmap = QPixmap(currentImage)
             self.imageDisp.setPixmap(pixmap)
             self.imageDisp.setScaledContents(True)
             self.imageDisp.setMinimumSize(QSize(100, 300))
             self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-            
-            # Decrements progress counter and bar
-            progression -= 1
-            self.progressBar.setValue(progression)
+
     # * ----------------------------- 
     # * Opens dialogue box when no options have been selected, but the 'submit' button was used
     # * ----------------------------- 
