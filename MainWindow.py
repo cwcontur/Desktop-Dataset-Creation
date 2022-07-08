@@ -36,9 +36,23 @@ from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 import sys
-
-from PIL import Image
+from QSwitchControl import SwitchControl
+# from PIL import Image
 # global variables for the current image number [progress], and the number of images [images]
+
+# class QHSeperationLine(QtWidgets.QFrame):
+#   '''
+#   a horizontal seperation line\n
+#   '''
+#   def __init__(self):
+#     super().__init__()
+#     self.setMinimumWidth(1)
+#     self.setFixedHeight(20)
+#     self.setFrameShape(QtWidgets.QFrame.HLine)
+#     self.setFrameShadow(QtWidgets.QFrame.Sunken)
+#     self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
+#     return
+
 # * ================================================
 class ButtonGroup(QtCore.QObject):
     trigger = QtCore.pyqtSignal((),(bool,))
@@ -133,12 +147,12 @@ class MainWindow(QMainWindow):
         self.imageDisp.setFixedHeight(533)
 
         # ! Displays the first image when program is loaded
-        # currentImage = os.path.join(image_directory, self.image_files[progression])
-        # pixmap = QPixmap(currentImage)
-        # self.imageDisp.setPixmap(pixmap)
-        # self.imageDisp.setScaledContents(True)
-        # self.imageDisp.setMinimumSize(QSize(100, 300))
-        # self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        currentImage = os.path.join(image_directory, self.image_files[progression])
+        pixmap = QPixmap(currentImage)
+        self.imageDisp.setPixmap(pixmap)
+        self.imageDisp.setScaledContents(True)
+        self.imageDisp.setMinimumSize(QSize(100, 300))
+        self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         # ! Creates button group to control the buttons!
         # ! ==========================
         self.group = QButtonGroup()
@@ -149,11 +163,17 @@ class MainWindow(QMainWindow):
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
         # ? =============================================================================
         self.she = AnimatedToggle(checked_color="#e6382c", pulse_checked_color="#bfbfbf") # Red, Grey
+        # self.she.setFixedWidth(100)
+        self.she.setFixedHeight(50)
         self.she.setChecked(False)
         self.she.setShortcut(QKeySequence("Left"))
         self.she.setStatusTip("Use 'Left Arrow' to toggle")
         self.group.addButton(self.she)
         self.she.toggled.connect(self.sheData)
+        
+        sheLabel = QLabel("She")
+        sheLabel.setFont(QFont("SF", 12))
+        sheLabel.setAlignment(Qt.AlignCenter)
         #   --------------------------------------
         self.her = AnimatedToggle(checked_color="#e6732c", pulse_checked_color="#bfbfbf") # Orange, Grey
         self.her.setChecked(False)
@@ -161,6 +181,10 @@ class MainWindow(QMainWindow):
         self.her.setStatusTip("Use 'Shift+Left Arrow' to toggle")
         self.group.addButton(self.her)
         self.her.toggled.connect(self.herData)
+        
+        herLabel = QLabel("Her")
+        herLabel.setFont(QFont("SF", 12))
+        herLabel.setAlignment(Qt.AlignCenter)
         # ? =============================================================================
         self.he = AnimatedToggle(checked_color="#ebd82f", pulse_checked_color="#bfbfbf") # Yellow, Grey
         self.he.setChecked(False)
@@ -168,6 +192,9 @@ class MainWindow(QMainWindow):
         self.he.setStatusTip("Use 'Down Arrow' to toggle")
         self.group.addButton(self.he)
         self.he.toggled.connect(self.heData)
+        heLabel = QLabel("He")
+        heLabel.setFont(QFont("SF", 12))
+        heLabel.setAlignment(Qt.AlignCenter)
         #   --------------------------------------       
         self.him = AnimatedToggle(checked_color="#3ac25f", pulse_checked_color="#bfbfbf") # Green, Grey
         self.him.setChecked(False)
@@ -175,6 +202,9 @@ class MainWindow(QMainWindow):
         self.him.setStatusTip("Use 'Shift+Down Arrow' to toggle")
         self.group.addButton(self.him)
         self.him.toggled.connect(self.himData)
+        himLabel = QLabel("Him")
+        himLabel.setFont(QFont("SF", 12))
+        himLabel.setAlignment(Qt.AlignCenter)
         # ? =============================================================================
         self.they = AnimatedToggle(checked_color="#2f5eeb", pulse_checked_color="#bfbfbf") # Blue, Grey
         self.they.setChecked(False) 
@@ -182,6 +212,9 @@ class MainWindow(QMainWindow):
         self.they.setStatusTip("Use 'Right Arrow' to toggle")
         self.group.addButton(self.they)
         self.they.toggled.connect(self.theyData)
+        theyLabel = QLabel("They")
+        theyLabel.setFont(QFont("SF", 12))
+        theyLabel.setAlignment(Qt.AlignCenter)        
         #   --------------------------------------        
         self.them = AnimatedToggle(checked_color="#612feb", pulse_checked_color="#bfbfbf") # Purple, Grey
         self.them.setChecked(False) 
@@ -189,11 +222,16 @@ class MainWindow(QMainWindow):
         self.them.setStatusTip("Use 'Shift+Down Arrow' to toggle")
         self.group.addButton(self.them)
         self.them.toggled.connect(self.themData)
+        themLabel = QLabel("Them")
+        themLabel.setFont(QFont("SF", 12))
+        themLabel.setAlignment(Qt.AlignCenter)         
         # ? =============================================================================       
         # ! -----------------------------------------------------------------------------
         
         # ? Submits button states and moves onto the next image for labeling 
         self.next = QPushButton('Submit', self)
+        self.next.setFixedWidth(200)
+        self.next.setFixedHeight(35)
         self.next.setShortcut(QKeySequence("Space"))
         self.next.setStatusTip("Use 'Enter' to submit label and go to next image")
         self.group.addButton(self.next)
@@ -207,38 +245,78 @@ class MainWindow(QMainWindow):
         self.progressBar.setAlignment(Qt.AlignCenter)
         self.progressBar.setFormat("%v/%m")
         self.progressBar.setMaximum(images) 
+        self.progressBar.setValue(progression)
         
         # ! All layouts needed to be arranged for the GUI
-        basement_layout = QVBoxLayout()
-        base_layout = QHBoxLayout()
-        image_layout = QVBoxLayout()
-        buttons_layout = QVBoxLayout()
+        # basement_layout = QVBoxLayout()
+        # separ = QFrame()
+        # separ.setFrameShape(QFrame.HLine)
+        
+        # separ = QFrame();
+        # separ.setObjectName(QString.fromUtf8("line"));
+        # separ.setGeometry(QRect(320, 150, 118, 3));
+        # separ.setFrameShape(QFrame.HLine);
+        # separ.setFrameShadow(QFrame.Sunken);
+        separ = QFrame()
+        separ.setGeometry(QRect(60, 110, 751, 20))
+        separ.setFrameShape(QFrame.HLine)
+        separ.setFrameShadow(QFrame.Sunken)
+        
+        separ2 = QFrame()
+        separ2.setGeometry(QRect(60, 110, 751, 20))
+        separ2.setFrameShape(QFrame.HLine)
+        separ2.setFrameShadow(QFrame.Sunken)
+        
+        self.base_layout = QHBoxLayout()
+        self.base_layout.setSpacing(0)
+        self.image_layout = QVBoxLayout()
+        self.image_layout.setSpacing(0)
+        self.buttons_layout = QVBoxLayout()
+        # buttons_layout.SetMaximumSize(100,50)
+        self.buttons_layout.setSpacing(0)
+        self.buttons_layout.setContentsMargins(10, -20, 10, 0)
         # submit_layout = QVBoxLayout()
         
-        # ? Buttons added to the GUI layout to be displayed
+
+       # ? Buttons added to the GUI layout to be displayed
         image_layout.addWidget(self.imageDisp)
-        # buttons_layout.addWidget(self.progressBar)
-        buttons_layout.addWidget(self.she)
-        buttons_layout.addWidget(self.her)
-        buttons_layout.addWidget(self.he)
-        buttons_layout.addWidget(self.him)
-        buttons_layout.addWidget(self.they)
-        buttons_layout.addWidget(self.them)
-        buttons_layout.addWidget(self.next)
-              
+        
+        self.buttons_layout.addWidget(sheLabel)
+        self.buttons_layout.addWidget(self.she)
+        
+        self.buttons_layout.addWidget(herLabel)
+        self.buttons_layout.addWidget(self.her)
+
+        self.buttons_layout.addWidget(heLabel)
+        self.buttons_layout.addWidget(self.he)
+        
+        self.buttons_layout.addWidget(himLabel)
+        self.buttons_layout.addWidget(self.him)
+        
+        self.buttons_layout.addWidget(theyLabel)
+        self.buttons_layout.addWidget(self.they)
+        
+        self.buttons_layout.addWidget(themLabel)
+        self.buttons_layout.addWidget(self.them)
+        
+        self.buttons_layout.addWidget(self.next)
+        self.buttons_layout.setAlignment(Qt.AlignCenter)
+
+        # buttons_layout.addStretch()
+        # buttons_layout.setSpacing(0)       
         # * Adds status bar at bottom for tips
         # self.setStatusBar(QStatusBar(self))
         self.statusbar = self.statusBar()
         self.statusbar.addPermanentWidget(self.progressBar)
         # basement_layout.addWidget()
         
-        base_layout.addLayout(image_layout)
-        base_layout.addLayout(buttons_layout)
+        self.base_layout.addLayout(self.image_layout)
+        self.base_layout.addLayout(self.buttons_layout)
         
         # basement_layout.addWidget(self.progressBar)
         # basement_layout.addLayout(base_layout)
         widget = QWidget()
-        widget.setLayout(base_layout)
+        widget.setLayout(self.base_layout)
         self.setCentralWidget(widget)
         
         # * Adds tool bar at top
@@ -247,6 +325,13 @@ class MainWindow(QMainWindow):
         
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
+
+def separatorLines():
+    line = QFrame()
+    line.setGeometry(QRect(60, 110, 751, 20))
+    line.setFrameShape(QFrame.HLine)
+    line.setFrameShadow(QFrame.Sunken)
+    buttons_layout.addWidget(line)
 
 # ! 1 is toggled, 0 is not toggled 
 # ? =============================
@@ -285,7 +370,7 @@ class MainWindow(QMainWindow):
     def updateData(self):
         global progression
         # Displays + updates image to be labeled
-        currentImage = os.path.join(image_directory, self.image_files[progression])
+        currentImage = os.path.join(image_directory, self.image_files[progression + 1])
         pixmap = QPixmap(currentImage)
         self.imageDisp.setPixmap(pixmap)
         self.imageDisp.setScaledContents(True)
