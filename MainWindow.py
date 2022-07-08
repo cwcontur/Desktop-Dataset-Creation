@@ -63,18 +63,18 @@ class ButtonGroup(QtCore.QObject):
     def removeButton(self, button):
         button.clicked.disconnect(self.trigger.emit)
 # * ================================================
-
 class MainWindow(QMainWindow):
-    # root_directory = os.path.dirname(os.path.abspath("__file__"))
-    # image_directory = os.path.join(root_directory, "images/")
-    # mylist = os.listdir(image_directory)
-    global images, progression#, W, H, inputResults
+    # Default path
+    root_directory = os.path.dirname(os.path.abspath("__file__"))
+    
+    global images, progression, clickCounter
     images = 0
     progression = 0
-    # W = 6
-    # H = images - 1
-    # # ! 1 is toggled, 0 is not toggled
-    # inputResults = [[0 for x in range(W)] for y in range(H)]
+    clickCounter = 0
+    
+    global iconPath
+    iconPath = os.path.join(root_directory, "icons\\")
+
     def __init__(self):
         super().__init__()
         self.initUI()
@@ -105,14 +105,13 @@ class MainWindow(QMainWindow):
         # * collects inputs for each image [globally] and stores them in a 2D array
         # ! 1 is toggled, 0 is not toggled
         global inputResults
-        W = 6
-        H = images
-        inputResults = [[None for x in range(W)] for y in range(H)]
+        Rows = images
+        inputResults = np.empty((Rows, 6))
         # * ----------------
         
         # Array of zeroes with a place for each image
         global mylist
-        mylist = np.zeros(shape=(images))
+        mylist = np.empty(images)
         
         # ? Creates an array of the image file names
         for subdir, dirs, files in os.walk(image_directory):
@@ -163,14 +162,12 @@ class MainWindow(QMainWindow):
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
         # ? =============================================================================
         self.she = AnimatedToggle(checked_color="#e6382c", pulse_checked_color="#bfbfbf") # Red, Grey
-        # self.she.setFixedWidth(100)
         self.she.setFixedHeight(50)
         self.she.setChecked(False)
         self.she.setShortcut(QKeySequence("Left"))
         self.she.setStatusTip("Use 'Left Arrow' to toggle")
         self.group.addButton(self.she)
         self.she.toggled.connect(self.sheData)
-        
         sheLabel = QLabel("She")
         sheLabel.setFont(QFont("SF", 12))
         sheLabel.setAlignment(Qt.AlignCenter)
@@ -181,7 +178,6 @@ class MainWindow(QMainWindow):
         self.her.setStatusTip("Use 'Shift+Left Arrow' to toggle")
         self.group.addButton(self.her)
         self.her.toggled.connect(self.herData)
-        
         herLabel = QLabel("Her")
         herLabel.setFont(QFont("SF", 12))
         herLabel.setAlignment(Qt.AlignCenter)
@@ -225,16 +221,13 @@ class MainWindow(QMainWindow):
         themLabel = QLabel("Them")
         themLabel.setFont(QFont("SF", 12))
         themLabel.setAlignment(Qt.AlignCenter)         
-        # ? =============================================================================       
-        # ! -----------------------------------------------------------------------------
-        
+        # ? =============================================================================               
         # ? Submits button states and moves onto the next image for labeling 
         self.next = QPushButton('Submit', self)
         self.next.setFixedWidth(200)
         self.next.setFixedHeight(35)
         self.next.setShortcut(QKeySequence("Space"))
-        self.next.setStatusTip("Use 'Enter' to submit label and go to next image")
-        self.group.addButton(self.next)
+        self.next.setStatusTip("Use 'Space' to submit label and go to next image")
         self.next.clicked.connect(self.ontoNext)
         
         # * Creates the progress bar and limits it for the number of images that will be processed;
@@ -248,119 +241,117 @@ class MainWindow(QMainWindow):
         self.progressBar.setValue(progression)
         
         # ! All layouts needed to be arranged for the GUI
-        # basement_layout = QVBoxLayout()
-        # separ = QFrame()
-        # separ.setFrameShape(QFrame.HLine)
-        
-        # separ = QFrame();
-        # separ.setObjectName(QString.fromUtf8("line"));
-        # separ.setGeometry(QRect(320, 150, 118, 3));
-        # separ.setFrameShape(QFrame.HLine);
-        # separ.setFrameShadow(QFrame.Sunken);
-        separ = QFrame()
-        separ.setGeometry(QRect(60, 110, 751, 20))
-        separ.setFrameShape(QFrame.HLine)
-        separ.setFrameShadow(QFrame.Sunken)
-        
-        separ2 = QFrame()
-        separ2.setGeometry(QRect(60, 110, 751, 20))
-        separ2.setFrameShape(QFrame.HLine)
-        separ2.setFrameShadow(QFrame.Sunken)
-        
-        self.base_layout = QHBoxLayout()
-        self.base_layout.setSpacing(0)
-        self.image_layout = QVBoxLayout()
-        self.image_layout.setSpacing(0)
+        base_layout = QHBoxLayout()
+        base_layout.setSpacing(0)
+        image_layout = QVBoxLayout()
+        image_layout.setSpacing(0)
         self.buttons_layout = QVBoxLayout()
-        # buttons_layout.SetMaximumSize(100,50)
         self.buttons_layout.setSpacing(0)
-        self.buttons_layout.setContentsMargins(10, -20, 10, 0)
-        # submit_layout = QVBoxLayout()
-        
+        self.buttons_layout.setContentsMargins(10, -20, 10, 0)        
 
-       # ? Buttons added to the GUI layout to be displayed
+       # ! Buttons added to the GUI layout to be displayed
+       # ! ====================================
         image_layout.addWidget(self.imageDisp)
         
         self.buttons_layout.addWidget(sheLabel)
         self.buttons_layout.addWidget(self.she)
-        
+        self.separatorLines()
+
         self.buttons_layout.addWidget(herLabel)
         self.buttons_layout.addWidget(self.her)
+        self.separatorLines()
 
         self.buttons_layout.addWidget(heLabel)
         self.buttons_layout.addWidget(self.he)
-        
+        self.separatorLines()
+
         self.buttons_layout.addWidget(himLabel)
         self.buttons_layout.addWidget(self.him)
+        self.separatorLines()
         
         self.buttons_layout.addWidget(theyLabel)
         self.buttons_layout.addWidget(self.they)
+        self.separatorLines()
         
         self.buttons_layout.addWidget(themLabel)
         self.buttons_layout.addWidget(self.them)
         
         self.buttons_layout.addWidget(self.next)
         self.buttons_layout.setAlignment(Qt.AlignCenter)
-
-        # buttons_layout.addStretch()
-        # buttons_layout.setSpacing(0)       
+        # ? ============================================
+        
         # * Adds status bar at bottom for tips
-        # self.setStatusBar(QStatusBar(self))
         self.statusbar = self.statusBar()
         self.statusbar.addPermanentWidget(self.progressBar)
-        # basement_layout.addWidget()
         
-        self.base_layout.addLayout(self.image_layout)
-        self.base_layout.addLayout(self.buttons_layout)
+        base_layout.addLayout(image_layout)
+        base_layout.addLayout(self.buttons_layout)
         
-        # basement_layout.addWidget(self.progressBar)
-        # basement_layout.addLayout(base_layout)
         widget = QWidget()
-        widget.setLayout(self.base_layout)
+        widget.setLayout(base_layout)
         self.setCentralWidget(widget)
         
         # * Adds tool bar at top
         toolbar = QToolBar("Cookie Bakery")
+        toolbar.setIconSize(QSize(32, 32))
         self.addToolBar(toolbar)
+        
+        undoIcon = os.path.join(iconPath, 'arrow-curve-180-left.png')
+        goBack = QAction(QIcon(undoIcon), "Go Back", self)
+        goBack.setStatusTip("Go back and re-label last image")
+        goBack.triggered.connect(self.goBackNow)
+        toolbar.addAction(goBack)
         
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
 
-def separatorLines():
-    line = QFrame()
-    line.setGeometry(QRect(60, 110, 751, 20))
-    line.setFrameShape(QFrame.HLine)
-    line.setFrameShadow(QFrame.Sunken)
-    buttons_layout.addWidget(line)
+    # * Creates separator lines between toggle buttons
+    def separatorLines(self):
+        line = QFrame()
+        line.setGeometry(QRect(60, 110, 751, 20))
+        line.setFrameShape(QFrame.HLine)
+        line.setFrameShadow(QFrame.Sunken)
+        self.buttons_layout.addWidget(line)
 
 # ! 1 is toggled, 0 is not toggled 
 # ? =============================
 # ! She/Her             
     def sheData(self, s):
+        global clickCounter
         if(s):
             inputResults[progression][0] = 1
+            clickCounter += 1
 #   -----------------------------            
     def herData(self, s):
+        global clickCounter
         if(s):
+            clickCounter += 1
             inputResults[progression][1] = 1
 # ? =============================     
 # ! He/Him            
     def heData(self, s):
+        global clickCounter
         if(s):
-            print(progression) 
+            clickCounter += 1
             inputResults[progression][2] = 1
 #   -----------------------------            
     def himData(self, s):
+        global clickCounter
         if(s):
+            clickCounter += 1
             inputResults[progression][3] = 1
 # ? =============================      
 # ! They/Them            
     def theyData(self, s):
+        global clickCounter
         if(s):
+            clickCounter += 1
             inputResults[progression][4] = 1
 #   -----------------------------            
     def themData(self, s):
+        global clickCounter
         if(s):
+            clickCounter += 1
             inputResults[progression][5] = 1
 # ? =============================   
         
@@ -368,6 +359,10 @@ def separatorLines():
 # * Updates the image displayed + increments the progress bar
 # * -----------------------------    
     def updateData(self):
+        # Resets button state tracking
+        global clickCounter
+        clickCounter = 0
+        
         global progression
         # Displays + updates image to be labeled
         currentImage = os.path.join(image_directory, self.image_files[progression + 1])
@@ -381,83 +376,57 @@ def separatorLines():
         progression += 1
         if progression <= images:
             self.progressBar.setValue(progression)
-# * -----------------------------        
+# * -----------------------------
+# * Goes onto the next image for labeling 
+# * -----------------------------         
     def ontoNext(self, s):
         global progression
         global images
-        
+
         # Unchecks all radio buttons for fresh state when next image is shown
         for button in self.group.buttons():
             if button is not s:
                 button.setChecked(False)
-    
-        self.updateData()
 
+        # Displays an error if no buttons are toggled
+        if clickCounter == 0: 
+            self.userError()   
+        else:
+            self.updateData()
+# * -----------------------------
+# * Lets the user go back and redo the label for the last image
+# * -----------------------------           
+    def goBackNow(self):
+        global progression
+        # Displays and undoes label for last image to be labeled
+        if progression > 0:
+            currentImage = os.path.join(image_directory, self.image_files[progression-1])
+            pixmap = QPixmap(currentImage)
+            self.imageDisp.setPixmap(pixmap)
+            self.imageDisp.setScaledContents(True)
+            self.imageDisp.setMinimumSize(QSize(100, 300))
+            self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+            
+            # Decrements progress counter and bar
+            progression -= 1
+            self.progressBar.setValue(progression)
 # * ----------------------------- 
 # * Opens dialogue box when no options have been selected, but the 'submit' button was used
+# * ----------------------------- 
     def userError(self):
+        global iconPath
         errorWindow = QMessageBox(self)
         errorWindow.setWindowTitle("Whoa there!")
         errorWindow.setText("You have to make at least one selection!")
         errorWindow.setStandardButtons(QMessageBox.Ok)
-        errorWindow.setIcon("brain--exclamation.png")
+        errorIcon = os.path.join(iconPath, 'brain--exclamation.png')
+        errorWindow.setIcon(QMessageBox.Warning)
         button = errorWindow.exec_()
         
         if button == QMessageBox.Ok:
             errorWindow.close()
-# class MainWindow(QMainWindow):
-#     def __init__(self):
-#         super().__init__()
-        
-#         self.setWindowTitle("Stupid Bitch")
-#         self.setMinimumSize(QSize(800, 535))
-#         self.setMaximumSize(QSize(1500, 1000))
-        
-#         layout = QHBoxLayout()
-        
-#         layout.addWidget(Color("red"))
-#         layout.addWidget(Color("green"))
-#         layout.addWidget(Color("yellow"))
-#         layout.addWidget(Color("blue"))
-#         widget = QWidget()
-#         widget.setLayout(layout)
-        
-#         self.setCentralWidget(widget)
-        
-#         toolbar = QToolBar("My Main Toolbar")
-#         toolbar.setIconSize(QSize(16,16)) # ? Sets icon size
-#         self.addToolBar(toolbar)
-        
-#         button_action = QAction(QIcon("cookie.png"), "Your Button", self) # * sets the button to an icon pic
-        
-#         button_action.setStatusTip("This is your cookie")
-#         button_action.triggered.connect(self.onMyToolBarButtonClick)
-#         button_action.setCheckable(True) # ! Makes the button toggleable
-#         toolbar.addAction(button_action) 
-        
-#         button_action.setShortcut(QKeySequence("Ctrl+p")) # ! keyboard shortcut
-#         toolbar.addAction(button_action)                     
-        
-#         toolbar.addSeparator() # ? Adds line in the menu to separate components
-        
-#         button_action2 = QPushButton("shit")
-        
-#         button_action2.setStatusTip("Who Took a Bite???????")
-#         # button_action2.triggered.connect(self.onMyToolBarButtonClick)
-#         button_action2.clicked.connect(self.onMyToolBarButtonClick) # ! Button action after click
-#         # toolbar.addAction(button_action2)
-        
-#         self.setStatusBar(QStatusBar(self))
-        
-#         menu = self.menuBar()
-        
-#         file_menu = menu.addMenu("&Cunt")
-#         file_menu.addAction(button_action)
-#         file_menu.addAction(button_action2)  
-    
-#     def onMyToolBarButtonClick(self, s):
-#         print("monch", s)
-        
+# * ============================
+# ! ============================
 def main():
     
     app = QApplication(sys.argv)
@@ -468,7 +437,7 @@ def main():
 
 if __name__ == '__main__':
     main()
-    
+# ! ============================
 # ! ~ Original starter code for the GUI ~
 # ! app = QApplication(sys.argv)
 # ! window = MainWindow()
