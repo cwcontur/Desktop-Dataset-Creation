@@ -13,6 +13,7 @@
 #?   )  |  \  `.___________|/
 #?   `--'   `--'
 
+import SaveData
 from copyreg import pickle
 from logging import root
 import sys
@@ -20,38 +21,22 @@ from tkinter import image_names
 import os
 import pandas as pd
 import numpy as np
-# import PyQt5
+import shutil
 from PyQt5 import QtCore, QtWidgets
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import *
 from PyQt5 import QtGui
-# from matplotlib import image
 from pydantic import root_validator
 from qtwidgets import Toggle, AnimatedToggle
-
 from PyQt5.QtWidgets import * 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 import sys
 from QSwitchControl import SwitchControl
-# from PIL import Image
-# global variables for the current image number [progress], and the number of images [images]
-
-# class QHSeperationLine(QtWidgets.QFrame):
-#   '''
-#   a horizontal seperation line\n
-#   '''
-#   def __init__(self):
-#     super().__init__()
-#     self.setMinimumWidth(1)
-#     self.setFixedHeight(20)
-#     self.setFrameShape(QtWidgets.QFrame.HLine)
-#     self.setFrameShadow(QtWidgets.QFrame.Sunken)
-#     self.setSizePolicy(QtWidgets.QSizePolicy.Preferred, QtWidgets.QSizePolicy.Minimum)
-#     return
+from datetime import datetime
 
 # * ================================================
 class ButtonGroup(QtCore.QObject):
@@ -62,9 +47,10 @@ class ButtonGroup(QtCore.QObject):
         
     def removeButton(self, button):
         button.clicked.disconnect(self.trigger.emit)
+        
 # * ================================================
 class MainWindow(QMainWindow):
-    # Default path
+    # ? Default path
     root_directory = os.path.dirname(os.path.abspath("__file__"))
     
     global images, progression, clickCounter
@@ -93,23 +79,41 @@ class MainWindow(QMainWindow):
         pic = QPixmap(os.path.join(iconPath, "cookie_splash.png"))
         pix = pic.scaled(300, 300, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
         splash = QSplashScreen(pix)
-        splash.show()                
+        splash.show()             
         
-        # Creates global variables that get the number of images and keep track of which file in the directory is being accessed
+        # * Creates global variables that get the number of images and keep track of which file in the directory is being accessed
         global images
         global progression
         images = len(os.listdir(image_directory)) # Counts the number of files in the image directory
-        progression = 0
+        progression = 1
         
-        # * ----------------
         # * collects inputs for each image [globally] and stores them in a 2D array
         # ! 1 is toggled, 0 is not toggled
         global inputResults
         Rows = images
-        inputResults = np.empty((Rows, 7))
+        
+        # ! Loads last used labels
+        if os.path.exists("./SaveData.csv"):
+            # ? Creates backup of previous labels and uses current time to name
+            now = datetime.now()
+            current_time = str(now.strftime("%H-%M-%S"))
+            backupFile = "Backup" + current_time + ".csv"
+            dest = "backups\\" + backupFile
+            backLocation = os.path.join(root_directory, dest)
+            backup = shutil.copyfile(r'./SaveData.csv', backLocation)
+            # ? =====================================================
+            
+            # ! Opens last used file
+            loadData = pd.read_csv(r'./SaveData.csv')
+            loadData.drop(loadData.columns[0:2], inplace=True, axis=1)
+            inputResults = loadData.to_numpy()
+            progression = int(inputResults[0][1])
+            print(inputResults)
+        else:
+            # Creates new array if needed
+            inputResults = np.zeros((Rows, 7)) # Can't be empty
         
         fileNames = []
-        filePosition = 0
         # ? Creates a list of the files in the order that they'll be displayed
         for subdir, dirs, files in os.walk(image_directory):
             for file in files:
@@ -117,7 +121,8 @@ class MainWindow(QMainWindow):
 
         # ! Creates the list of image names 
         self.image_files = os.listdir(image_directory)
-        
+
+        # * Sets up GUI window elements
         windowIcon = os.path.join(iconPath, 'cookie.png')
         iconWin = QtGui.QIcon(windowIcon)
         self.setWindowIcon(iconWin)
@@ -129,7 +134,7 @@ class MainWindow(QMainWindow):
         self.imageDisp = QLabel(self)
         self.imageDisp.setFixedWidth(400)
         self.imageDisp.setFixedHeight(533)
-
+        
         # ! Displays the first image when program is loaded
         currentImage = os.path.join(image_directory, self.image_files[progression])
         pixmap = QPixmap(currentImage)
@@ -279,11 +284,26 @@ class MainWindow(QMainWindow):
         toolbar.setIconSize(QSize(32, 32))
         self.addToolBar(toolbar)
         
+        # * Left side of the tool bar
+        saveIcon = os.path.join(iconPath, 'disk.png')
+        saveLabels = QAction(QIcon(saveIcon), "Save Labels", self)
+        saveLabels.setStatusTip("Saves the created labels")
+        saveLabels.triggered.connect(self.saveUserData)
+        toolbar.addAction(saveLabels)
+        
+        # * Creates a left and right side for the tool bar
+        spacer = QWidget()
+        spacer.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
+        toolbar.addWidget(spacer)
+        
+        # * Right side of the tool bar
         undoIcon = os.path.join(iconPath, 'arrow-curve-180-left.png')
         goBack = QAction(QIcon(undoIcon), "Go Back", self)
         goBack.setStatusTip("Go back and re-label last image")
         goBack.triggered.connect(self.goBackNow)
         toolbar.addAction(goBack)
+        
+        
         
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
@@ -364,8 +384,7 @@ class MainWindow(QMainWindow):
     # * -----------------------------         
     def ontoNext(self, s):
         global progression
-        global images
-
+        
         # Unchecks all radio buttons for fresh state when next image is shown
         for button in self.group.buttons():
             if button is not s:
@@ -397,17 +416,32 @@ class MainWindow(QMainWindow):
     # * Opens dialogue box when no options have been selected, but the 'submit' button was used
     # * ----------------------------- 
     def userError(self):
-        global iconPath
         errorWindow = QMessageBox(self)
         errorWindow.setWindowTitle("Whoa there!")
         errorWindow.setText("You have to make at least one selection!")
         errorWindow.setStandardButtons(QMessageBox.Ok)
-        errorIcon = os.path.join(iconPath, 'brain--exclamation.png')
         errorWindow.setIcon(QMessageBox.Warning)
         button = errorWindow.exec_()
         
         if button == QMessageBox.Ok:
             errorWindow.close()
+    # * ----------------------------- 
+    # * Does the process of saving for the user
+    # * -----------------------------        
+    def saveUserData(self):
+        # Saves label position for saved pictures
+        inputResults[0, 1] = progression
+        SaveData.compileData(inputResults, self.image_files)
+        
+        saveWindow = QMessageBox(self)
+        saveWindow.setWindowTitle("Awesome!")
+        saveWindow.setText("Your labels have been saved!")
+        saveWindow.setStandardButtons(QMessageBox.Ok)
+        saveWindow.setIcon(QMessageBox.Information)
+        button = saveWindow.exec_()
+        
+        if button == QMessageBox.Ok:
+            saveWindow.close()                
     # * ============================
 # ! ============================
 def main():
