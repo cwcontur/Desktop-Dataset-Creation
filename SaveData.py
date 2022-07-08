@@ -6,9 +6,9 @@ import pandas as pd
 import os
 # ---------------------------------------------- #
 
-class saveDataLabels(data):
+class saveDataLabels(data, files):
 
-    def saveData(data):
+    def saveData(data, files):
         # Creates new csv and deletes previous version if it's still in existence
         if os.path.exists("./SaveData.csv"):  # File path in current directory
             os.remove("SaveData.csv")  # Deletes files [if exists]
@@ -20,6 +20,6 @@ class saveDataLabels(data):
         kb = round(file_size / 1024, 1)  # Kilobytes
         print("File size:", kb, "kb")
         
-    def loadData(data):
+    def loadData(data, files):
         
 

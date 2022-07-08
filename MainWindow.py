@@ -106,33 +106,18 @@ class MainWindow(QMainWindow):
         # ! 1 is toggled, 0 is not toggled
         global inputResults
         Rows = images
-        inputResults = np.empty((Rows, 6))
-        # * ----------------
+        inputResults = np.empty((Rows, 7))
         
-        # Array of zeroes with a place for each image
-        global mylist
-        mylist = np.empty(images)
-        
-        # ? Creates an array of the image file names
+        fileNames = []
+        filePosition = 0
+        # ? Creates a list of the files in the order that they'll be displayed
         for subdir, dirs, files in os.walk(image_directory):
             for file in files:
-                os.chdir(subdir)
-                  
-                if "female" in subdir:
-                    if((images) % 2 != 0):
-                        temp = file
-                        mylist.insert((images), temp)
-                # *-------------------------------- #
-                elif "male" in subdir:
-                    if((images) % 2 == 0):
-                        temp = file
-                        mylist.insert((images), temp)
+                fileNames.append(file)                
 
-                images += 1  # ! Count of the pictures found
-
-        mylist = os.listdir(image_directory)
+        # ! Creates the list of image names 
         self.image_files = os.listdir(image_directory)
-
+        
         windowIcon = os.path.join(iconPath, 'cookie.png')
         iconWin = QtGui.QIcon(windowIcon)
         self.setWindowIcon(iconWin)
@@ -152,13 +137,13 @@ class MainWindow(QMainWindow):
         self.imageDisp.setScaledContents(True)
         self.imageDisp.setMinimumSize(QSize(100, 300))
         self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
+        
         # ! Creates button group to control the buttons!
         # ! ==========================
         self.group = QButtonGroup()
         self.group.setExclusive(False)
         # ! ==========================
         
-        # ! -----------------------------------------------------------------------------
         # ! Creates all of the toggle buttons based on input [keyboard shortcuts included]
         # ? =============================================================================
         self.she = AnimatedToggle(checked_color="#e6382c", pulse_checked_color="#bfbfbf") # Red, Grey
@@ -250,7 +235,6 @@ class MainWindow(QMainWindow):
         self.buttons_layout.setContentsMargins(10, -20, 10, 0)        
 
        # ! Buttons added to the GUI layout to be displayed
-       # ! ====================================
         image_layout.addWidget(self.imageDisp)
         
         self.buttons_layout.addWidget(sheLabel)
@@ -278,7 +262,6 @@ class MainWindow(QMainWindow):
         
         self.buttons_layout.addWidget(self.next)
         self.buttons_layout.setAlignment(Qt.AlignCenter)
-        # ? ============================================
         
         # * Adds status bar at bottom for tips
         self.statusbar = self.statusBar()
@@ -313,51 +296,51 @@ class MainWindow(QMainWindow):
         line.setFrameShadow(QFrame.Sunken)
         self.buttons_layout.addWidget(line)
 
-# ! 1 is toggled, 0 is not toggled 
-# ? =============================
-# ! She/Her             
+    # ! 1 is toggled, 0 is not toggled 
+    # ? =============================
+    # ! She/Her             
     def sheData(self, s):
         global clickCounter
         if(s):
             inputResults[progression][0] = 1
             clickCounter += 1
-#   -----------------------------            
+    #   -----------------------------            
     def herData(self, s):
         global clickCounter
         if(s):
             clickCounter += 1
             inputResults[progression][1] = 1
-# ? =============================     
-# ! He/Him            
+    # ? =============================     
+    # ! He/Him            
     def heData(self, s):
         global clickCounter
         if(s):
             clickCounter += 1
             inputResults[progression][2] = 1
-#   -----------------------------            
+    #   -----------------------------            
     def himData(self, s):
         global clickCounter
         if(s):
             clickCounter += 1
             inputResults[progression][3] = 1
-# ? =============================      
-# ! They/Them            
+    # ? =============================      
+    # ! They/Them            
     def theyData(self, s):
         global clickCounter
         if(s):
             clickCounter += 1
             inputResults[progression][4] = 1
-#   -----------------------------            
+    #   -----------------------------            
     def themData(self, s):
         global clickCounter
         if(s):
             clickCounter += 1
             inputResults[progression][5] = 1
-# ? =============================   
+    # ? =============================   
         
-# * -----------------------------
-# * Updates the image displayed + increments the progress bar
-# * -----------------------------    
+    # * -----------------------------
+    # * Updates the image displayed + increments the progress bar
+    # * -----------------------------    
     def updateData(self):
         # Resets button state tracking
         global clickCounter
@@ -376,9 +359,9 @@ class MainWindow(QMainWindow):
         progression += 1
         if progression <= images:
             self.progressBar.setValue(progression)
-# * -----------------------------
-# * Goes onto the next image for labeling 
-# * -----------------------------         
+    # * -----------------------------
+    # * Goes onto the next image for labeling 
+    # * -----------------------------         
     def ontoNext(self, s):
         global progression
         global images
@@ -393,9 +376,9 @@ class MainWindow(QMainWindow):
             self.userError()   
         else:
             self.updateData()
-# * -----------------------------
-# * Lets the user go back and redo the label for the last image
-# * -----------------------------           
+    # * -----------------------------
+    # * Lets the user go back and redo the label for the last image
+    # * -----------------------------           
     def goBackNow(self):
         global progression
         # Displays and undoes label for last image to be labeled
@@ -410,9 +393,9 @@ class MainWindow(QMainWindow):
             # Decrements progress counter and bar
             progression -= 1
             self.progressBar.setValue(progression)
-# * ----------------------------- 
-# * Opens dialogue box when no options have been selected, but the 'submit' button was used
-# * ----------------------------- 
+    # * ----------------------------- 
+    # * Opens dialogue box when no options have been selected, but the 'submit' button was used
+    # * ----------------------------- 
     def userError(self):
         global iconPath
         errorWindow = QMessageBox(self)
@@ -425,7 +408,7 @@ class MainWindow(QMainWindow):
         
         if button == QMessageBox.Ok:
             errorWindow.close()
-# * ============================
+    # * ============================
 # ! ============================
 def main():
     
