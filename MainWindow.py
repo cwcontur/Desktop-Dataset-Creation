@@ -321,47 +321,41 @@ class MainWindow(QMainWindow):
     # ? =============================
     # ! She/Her             
     def sheData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             inputResults[progression][0] = 1
             clickCounter += 1
-            tracker += 1
     #   -----------------------------            
     def herData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             clickCounter += 1
-            tracker += 1
             inputResults[progression][1] = 1
     # ? =============================     
     # ! He/Him            
     def heData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             clickCounter += 1
-            tracker += 1
             inputResults[progression][2] = 1
     #   -----------------------------            
     def himData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             clickCounter += 1
-            tracker += 1
             inputResults[progression][3] = 1
     # ? =============================      
     # ! They/Them            
     def theyData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             clickCounter += 1
-            tracker += 1
             inputResults[progression][4] = 1
     #   -----------------------------            
     def themData(self, s):
-        global clickCounter, tracker
+        global clickCounter
         if(s):
             clickCounter += 1
-            tracker += 1
             inputResults[progression][5] = 1
     # ? =============================   
         
@@ -374,6 +368,7 @@ class MainWindow(QMainWindow):
         clickCounter = 0
         
         global progression
+
         # Displays + updates image to be labeled
         currentImage = os.path.join(image_directory, self.image_files[progression])
         pixmap = QPixmap(currentImage)
@@ -390,7 +385,7 @@ class MainWindow(QMainWindow):
     # * Goes onto the next image for labeling 
     # * -----------------------------         
     def ontoNext(self, s):
-        global progression
+        global progression, tracker
         
         # Unchecks all radio buttons for fresh state when next image is shown
         for button in self.group.buttons():
@@ -401,19 +396,30 @@ class MainWindow(QMainWindow):
         if clickCounter == 0: 
             self.userError()   
         else:
+            tracker += 1
             self.updateData()
+    
+    # ? Keeps track of where the data is at to make sure the numbers are the same  
+    global samePosition
+    samePosition = False
     # * -----------------------------
     # * Lets the user go back and redo the label for the last image
     # * -----------------------------           
     def goBackNow(self):
         # Displays and undoes label for last image to be labeled
-        global progression, tracker
+        global progression, tracker, samePosition
+        print(tracker)
+        print(progression)
         
-        if progression != tracker:
+        # Makes the progression number correct to display the right image 
+        if not samePosition:
             progression -= 1
+            samePosition = True
         
+        # Allows user to go back if they're not on the first image
         if progression >= 1:
             progression -= 1
+            tracker -= 1
             self.progressBar.setValue(progression)
             currentImage = os.path.join(image_directory, self.image_files[progression])
             pixmap = QPixmap(currentImage)
@@ -421,7 +427,19 @@ class MainWindow(QMainWindow):
             self.imageDisp.setScaledContents(True)
             self.imageDisp.setMinimumSize(QSize(100, 300))
             self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-
+        
+        # Gives user a warning if they're already on the first image
+        else:
+            warnWindow = QMessageBox(self)
+            warnWindow.setWindowTitle("Whoa there!")
+            warnWindow.setText("You're already at the first image!")
+            warnWindow.setStandardButtons(QMessageBox.Ok)
+            warnWindow.setIcon(QMessageBox.Warning)
+            button = warnWindow.exec_()
+        
+            # Closes error window
+            if button == QMessageBox.Ok:
+                warnWindow.close()    
     # * ----------------------------- 
     # * Opens dialogue box when no options have been selected, but the 'submit' button was used
     # * ----------------------------- 
@@ -433,6 +451,7 @@ class MainWindow(QMainWindow):
         errorWindow.setIcon(QMessageBox.Warning)
         button = errorWindow.exec_()
         
+        # Closes error window
         if button == QMessageBox.Ok:
             errorWindow.close()
     # * ----------------------------- 
