@@ -101,7 +101,7 @@ class MainWindow(QMainWindow):
             backupFile = "Backup" + current_time + ".csv"
             dest = "backups\\" + backupFile
             backLocation = os.path.join(root_directory, dest)
-            backup = shutil.copyfile(r'./SaveData.csv', backLocation)
+            backup = shutil.copyfile(r'./SaveData.csv', backLocation) # Creates a backup copy of the data file
             # ? =====================================================
             
             # ! Opens last used file
@@ -109,7 +109,6 @@ class MainWindow(QMainWindow):
             loadData.drop(loadData.columns[0:2], inplace=True, axis=1)
             inputResults = loadData.to_numpy()
             progression = int(inputResults[0][1])
-            print(inputResults)
         else:
             # Creates new array if needed
             inputResults = np.zeros((Rows, 7)) # Can't be empty
@@ -408,8 +407,6 @@ class MainWindow(QMainWindow):
     def goBackNow(self):
         # Displays and undoes label for last image to be labeled
         global progression, tracker, samePosition
-        print(tracker)
-        print(progression)
         
         # Makes the progression number correct to display the right image 
         if not samePosition:
@@ -419,7 +416,8 @@ class MainWindow(QMainWindow):
         # Allows user to go back if they're not on the first image
         if progression >= 1:
             progression -= 1
-            tracker -= 1
+            if tracker >= 0:
+                tracker -= 1
             self.progressBar.setValue(progression)
             currentImage = os.path.join(image_directory, self.image_files[progression])
             pixmap = QPixmap(currentImage)
@@ -458,7 +456,8 @@ class MainWindow(QMainWindow):
     # * Does the process of saving for the user
     # * -----------------------------        
     def saveUserData(self):
-        
+        global progression
+
         confirm = QMessageBox(self)
         confirm.setWindowTitle("Confirmation")
         confirm.setText("Do you want to save?")
@@ -487,12 +486,13 @@ class MainWindow(QMainWindow):
     # * Close window confirmation dialog
     # * -----------------------------              
     def closeEvent(self, event):
-
+        global progression
         reply = QMessageBox.question(self, 'Message',
                     "Are you sure to quit?", QMessageBox.StandardButton.Yes |
                     QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
 
         if reply == QMessageBox.StandardButton.Yes:
+            progression += 1
             self.saveUserData()
             event.accept()
         else:
@@ -506,8 +506,7 @@ def main():
     mainWindow = MainWindow()
     mainWindow.show()
     app.exec_()
-
-
+# ! ----------------
 if __name__ == '__main__':
     main()
 # ! ============================
