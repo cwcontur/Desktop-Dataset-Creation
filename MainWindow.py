@@ -13,30 +13,26 @@
 #?   )  |  \  `.___________|/
 #?   `--'   `--'
 
-import SaveData
-from copyreg import pickle
-from logging import root
 import sys
-from tkinter import image_names
 import os
 import pandas as pd
 import numpy as np
 import shutil
-from PyQt5 import QtCore, QtWidgets
+from PyQt5 import QtCore
 from PyQt5.QtCore import *
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 from PyQt5 import *
 from PyQt5 import QtGui
-from pydantic import root_validator
-from qtwidgets import Toggle, AnimatedToggle
+from qtwidgets import AnimatedToggle
 from PyQt5.QtWidgets import * 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
 import sys
-from QSwitchControl import SwitchControl
 from datetime import datetime
+import numpy as np
+import pandas as pd
 
 # * ================================================
 class ButtonGroup(QtCore.QObject):
@@ -91,7 +87,7 @@ class MainWindow(QMainWindow):
         # * collects inputs for each image [globally] and stores them in a 2D array
         # ! 1 is toggled, 0 is not toggled
         global inputResults
-        Rows = images
+        Rows = images + 1
         
         # ! Loads last used labels
         if os.path.exists("./SaveData.csv"):
@@ -111,17 +107,11 @@ class MainWindow(QMainWindow):
             progression = int(inputResults[0][1])
         else:
             # Creates new array if needed
-            inputResults = np.zeros((Rows, 7)) # Can't be empty
-        
-        fileNames = []
-        # ? Creates a list of the files in the order that they'll be displayed
-        for subdir, dirs, files in os.walk(image_directory):
-            for file in files:
-                fileNames.append(file)                
+            inputResults = np.zeros((Rows, 7)) # Can't be empty          
 
         # ! Creates the list of image names 
         self.image_files = os.listdir(image_directory)
-
+        self.image_files = ["Cookie"] + self.image_files
         # * Sets up GUI window elements
         windowIcon = os.path.join(iconPath, 'cookie.png')
         iconWin = QtGui.QIcon(windowIcon)
@@ -136,7 +126,7 @@ class MainWindow(QMainWindow):
         self.imageDisp.setFixedHeight(533)
         
         # ! Displays the first image when program is loaded
-        currentImage = os.path.join(image_directory, self.image_files[progression - 1])
+        currentImage = os.path.join(image_directory, self.image_files[progression])
         pixmap = QPixmap(currentImage)
         self.imageDisp.setPixmap(pixmap)
         self.imageDisp.setScaledContents(True)
@@ -301,9 +291,7 @@ class MainWindow(QMainWindow):
         goBack = QAction(QIcon(undoIcon), "Go Back", self)
         goBack.setStatusTip("Go back and re-label last image")
         goBack.triggered.connect(self.goBackNow)
-        toolbar.addAction(goBack)
-        
-        
+        toolbar.addAction(goBack)    
         
         splash.finish(self) #Closes splash screen after successful launch
         self.show()
@@ -367,7 +355,11 @@ class MainWindow(QMainWindow):
         clickCounter = 0
     
         global progression
-
+        # Increments progress bar         
+        if progression <= images:
+            self.progressBar.setValue(progression)
+            progression += 1
+            
         # Displays + updates image to be labeled
         currentImage = os.path.join(image_directory, self.image_files[progression])
         pixmap = QPixmap(currentImage)
@@ -376,10 +368,7 @@ class MainWindow(QMainWindow):
         self.imageDisp.setMinimumSize(QSize(100, 300))
         self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         
-        # Increments progress bar         
-        if progression <= images:
-            self.progressBar.setValue(progression)
-            progression += 1
+
     # * -----------------------------
     # * Goes onto the next image for labeling 
     # * -----------------------------         
@@ -412,14 +401,18 @@ class MainWindow(QMainWindow):
         if not samePosition:
             progression -= 1
             samePosition = True
-        
+
         # Allows user to go back if they're not on the first image
         if progression >= 1:
-            progression -= 1
+            
             if tracker >= 0:
                 tracker -= 1
-            self.progressBar.setValue(progression)
+                
             currentImage = os.path.join(image_directory, self.image_files[progression])
+            
+            progression -= 1
+            self.progressBar.setValue(progression)
+
             pixmap = QPixmap(currentImage)
             self.imageDisp.setPixmap(pixmap)
             self.imageDisp.setScaledContents(True)
@@ -452,6 +445,24 @@ class MainWindow(QMainWindow):
         # Closes error window
         if button == QMessageBox.Ok:
             errorWindow.close()
+            
+    def saveData(data):
+            # Creates new csv and deletes previous version if it's still in existence
+            if os.path.exists("./SaveData.csv"):  # File path in current directory
+                os.remove("SaveData.csv")  # Deletes files [if exists]
+
+            data.to_csv("SaveData.csv")  # Saves data to .csv
+
+            # Checks file size just to make sure that it's not empty
+            file_size = os.path.getsize("SaveData.csv")
+            kb = round(file_size / 1024, 1)  # Kilobytes
+            print("File size:", kb, "kb")
+
+    def compileData(data, files):
+            frameData = pd.DataFrame(data)
+            frameData.insert(0, 'img', files)
+            self.saveData(frameData)
+
     # * ----------------------------- 
     # * Does the process of saving for the user
     # * -----------------------------        
@@ -469,7 +480,15 @@ class MainWindow(QMainWindow):
         if button == QMessageBox.Yes:
             confirm.close()  
             inputResults[0, 1] = progression
-            SaveData.compileData(inputResults, self.image_files)
+
+            frameData = pd.DataFrame(inputResults)
+            frameData.insert(0, 'img', self.image_files)
+            
+            # Creates new csv and deletes previous version if it's still in existence
+            if os.path.exists("./SaveData.csv"):  # File path in current directory
+                os.remove("SaveData.csv")  # Deletes files [if exists]
+
+            frameData.to_csv("SaveData.csv")  # Saves data to .csv
             
             saveWindow = QMessageBox(self)
             saveWindow.setWindowTitle("Awesome!")
