@@ -8,7 +8,7 @@ a = Analysis(
     ['Labeler.py'],
     pathex=[],
     binaries=[],
-    datas=[],
+    datas=[('icons', 'icons')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
