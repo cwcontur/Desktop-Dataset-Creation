@@ -13,27 +13,24 @@
 #?   )  |  \  `.___________|/
 #?   `--'   `--'
 
+# imports needed for program
 import sys
 import os
 import pandas as pd
 import numpy as np
 import shutil
-from PyQt5 import QtCore
-from PyQt5.QtCore import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtGui import *
 from PyQt5 import *
-from PyQt5 import QtGui
 from qtwidgets import AnimatedToggle
 from PyQt5.QtWidgets import * 
 from PyQt5 import QtCore, QtGui
 from PyQt5.QtGui import * 
 from PyQt5.QtCore import * 
-import sys
-from datetime import datetime
+from datetime import datetime, date
 import numpy as np
 import pandas as pd
 
+# * ================================================
+# * Creates a button group to have control of all buttons at the same time
 # * ================================================
 class ButtonGroup(QtCore.QObject):
     trigger = QtCore.pyqtSignal((),(bool,))
@@ -49,12 +46,14 @@ class MainWindow(QMainWindow):
     # ? Default path
     root_directory = os.path.dirname(os.path.abspath("__file__"))
     
+    # Global variables needed for different functions
     global images, progression, clickCounter, tracker
     images = 0
     progression = 0
     clickCounter = 0
     tracker = 0
     
+    # Path for GUI icons
     global iconPath
     iconPath = os.path.join(root_directory, "icons\\")
 
@@ -65,13 +64,10 @@ class MainWindow(QMainWindow):
     def initUI(self):
         global root_directory
         global image_directory
-        # Source path for application
-        root_directory = os.path.dirname(os.path.abspath("__file__"))
-        # Source path for image files
-        image_directory = os.path.join(root_directory, "image_data\\")
-        # Source path for GUI icons
-        iconPath = os.path.join(root_directory, "icons\\")
-        
+        root_directory = os.path.dirname(os.path.abspath("__file__")) # Source path for application
+        image_directory = os.path.join(root_directory, "image_data\\") # Source path for image files
+        iconPath = os.path.join(root_directory, "icons\\") # Source path for GUI icons
+
         # ? Loads splash screen that stays persistent till the program is finished starting up
         pic = QPixmap(os.path.join(iconPath, "cookie_splash.png"))
         pix = pic.scaled(300, 300, QtCore.Qt.KeepAspectRatio) # Scales the splash screen down to 300px * 300px
@@ -94,7 +90,8 @@ class MainWindow(QMainWindow):
             # ? Creates backup of previous labels and uses current time to name
             now = datetime.now()
             current_time = str(now.strftime("%H-%M-%S"))
-            backupFile = "Backup" + current_time + ".csv"
+            today = str(date.today())
+            backupFile = "Backup" + today + "_" + current_time + ".csv" # Names backup file with unique name using date and time
             dest = "backups\\" + backupFile
             backLocation = os.path.join(root_directory, dest)
             backup = shutil.copyfile(r'./SaveData.csv', backLocation) # Creates a backup copy of the data file
@@ -368,7 +365,6 @@ class MainWindow(QMainWindow):
         self.imageDisp.setMinimumSize(QSize(100, 300))
         self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
         
-
     # * -----------------------------
     # * Goes onto the next image for labeling 
     # * -----------------------------         
@@ -418,7 +414,7 @@ class MainWindow(QMainWindow):
             self.imageDisp.setScaledContents(True)
             self.imageDisp.setMinimumSize(QSize(100, 300))
             self.imageDisp.setSizePolicy(QSizePolicy.MinimumExpanding, QSizePolicy.Fixed)
-        
+            
         # Gives user a warning if they're already on the first image
         else:
             warnWindow = QMessageBox(self)
@@ -445,24 +441,6 @@ class MainWindow(QMainWindow):
         # Closes error window
         if button == QMessageBox.Ok:
             errorWindow.close()
-            
-    def saveData(data):
-            # Creates new csv and deletes previous version if it's still in existence
-            if os.path.exists("./SaveData.csv"):  # File path in current directory
-                os.remove("SaveData.csv")  # Deletes files [if exists]
-
-            data.to_csv("SaveData.csv")  # Saves data to .csv
-
-            # Checks file size just to make sure that it's not empty
-            file_size = os.path.getsize("SaveData.csv")
-            kb = round(file_size / 1024, 1)  # Kilobytes
-            print("File size:", kb, "kb")
-
-    def compileData(data, files):
-            frameData = pd.DataFrame(data)
-            frameData.insert(0, 'img', files)
-            self.saveData(frameData)
-
     # * ----------------------------- 
     # * Does the process of saving for the user
     # * -----------------------------        
@@ -484,7 +462,7 @@ class MainWindow(QMainWindow):
             frameData = pd.DataFrame(inputResults)
             frameData.insert(0, 'img', self.image_files)
             
-            # Creates new csv and deletes previous version if it's still in existence
+            # Creates new csv and deletes previous version if it's still in existence [there's a backup, so deletion is fine]
             if os.path.exists("./SaveData.csv"):  # File path in current directory
                 os.remove("SaveData.csv")  # Deletes files [if exists]
 
