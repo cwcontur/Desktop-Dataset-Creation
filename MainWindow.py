@@ -366,7 +366,7 @@ class MainWindow(QMainWindow):
         # Resets button state tracking
         global clickCounter
         clickCounter = 0
-        
+    
         global progression
 
         # Displays + updates image to be labeled
@@ -458,19 +458,46 @@ class MainWindow(QMainWindow):
     # * Does the process of saving for the user
     # * -----------------------------        
     def saveUserData(self):
+        
+        confirm = QMessageBox(self)
+        confirm.setWindowTitle("Confirmation")
+        confirm.setText("Do you want to save?")
+        confirm.setStandardButtons(QMessageBox.Yes | QMessageBox.No)
+        confirm.setIcon(QMessageBox.Information)
+        button = confirm.exec_()
+
         # Saves label position for saved pictures
-        inputResults[0, 1] = progression
-        SaveData.compileData(inputResults, self.image_files)
-        
-        saveWindow = QMessageBox(self)
-        saveWindow.setWindowTitle("Awesome!")
-        saveWindow.setText("Your labels have been saved!")
-        saveWindow.setStandardButtons(QMessageBox.Ok)
-        saveWindow.setIcon(QMessageBox.Information)
-        button = saveWindow.exec_()
-        
-        if button == QMessageBox.Ok:
-            saveWindow.close()                
+        if button == QMessageBox.Yes:
+            confirm.close()  
+            inputResults[0, 1] = progression
+            SaveData.compileData(inputResults, self.image_files)
+            
+            saveWindow = QMessageBox(self)
+            saveWindow.setWindowTitle("Awesome!")
+            saveWindow.setText("Your labels have been saved!")
+            saveWindow.setStandardButtons(QMessageBox.Ok)
+            saveWindow.setIcon(QMessageBox.Information)
+            button = saveWindow.exec_()
+            
+            if button == QMessageBox.Ok:
+                saveWindow.close()
+        else:    
+            confirm.close()
+    # * ----------------------------- 
+    # * Close window confirmation dialog
+    # * -----------------------------              
+    def closeEvent(self, event):
+
+        reply = QMessageBox.question(self, 'Message',
+                    "Are you sure to quit?", QMessageBox.StandardButton.Yes |
+                    QMessageBox.StandardButton.No, QMessageBox.StandardButton.No)
+
+        if reply == QMessageBox.StandardButton.Yes:
+            self.saveUserData()
+            event.accept()
+        else:
+
+            event.ignore()            
     # * ============================
 # ! ============================
 def main():
