@@ -507,8 +507,3 @@ def main():
 if __name__ == '__main__':
     main()
 # ! ============================
-# ! ~ Original starter code for the GUI ~
-# ! app = QApplication(sys.argv)
-# ! window = MainWindow()
-# ! window.show()
-# ! app.exec_()
